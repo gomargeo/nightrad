@@ -43,6 +43,16 @@ The vignette walks through year-on-year radiance comparison, static/interactive 
 - Admin boundary maps with city labels
 - Supports spatial storytelling and urban monitoring
 
+
+## Data Sources
+
+The project uses annual VIIRS-DNB nighttime-light composites produced by the Earth Observation Group (EOG). The VIIRS data included in this repository are derived from EOG products distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
+
+Administrative boundaries used in the original analysis were obtained from GADM. GADM boundary data are **not redistributed in this repository**. Users should obtain the appropriate boundary data directly from GADM and comply with its licensing terms.
+
+The example analysis uses data clipped to the Greater Manila Area.
+
+
 ## Roadmap
 
 Planned additions:
