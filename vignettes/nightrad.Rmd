@@ -28,15 +28,18 @@ This analysis is guided by the following questions:
 
 ### **Data Description & Preprocessing**
 
-This vignette uses the following datasets:
+- **Nighttime Radiance:** Annual median composites of VIIRS-DNB
+  (Visible Infrared Imaging Radiometer Suite – Day/Night Band) from
+  the Earth Observation Group (EOG)
+  - Spatial resolution: 500 m
+  - Format: GeoTIFF (.tif)
+  - Temporal coverage: 2022 and 2023
+- **Administrative Boundaries:** Administrative boundary data from GADM.
 
- - Nighttime Radiance: Annual median composites of VIIRS-DNB (Visible Infrared Imaging Radiometer Suite – Day/Night Band) from the Earth Observation Group (EOG)
-   - Spatial resolution: 500m
-   - Format: GeoTIFF (.tif)
-   - Temporal coverage: 2022, 2023
- - Administrative Boundaries: Greater Manila boundary from GADM
- 
-All datasets were pre-clipped to the Greater Manila region for speed of analysis.
+The VIIRS data used in the analysis were pre-clipped to the Greater Manila
+region. GADM boundary data are not redistributed with this package; users
+should obtain the appropriate administrative boundaries directly from GADM
+and comply with its licensing terms.
 
 ### **Package Function and Analysis**
 
