@@ -1,0 +1,25 @@
+Package: nightrad
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jane", "Doe",
+      email = "jane@example.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: More about what it does (maybe more than one line).
+    Continuation lines should be indented.
+License: MIT + file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.3.2
+Suggests: rmarkdown
+VignetteBuilder: knitr
+Imports: classInt, dplyr, glue, htmltools, knitr, leaflet, sf, terra,
+        tmap
+NeedsCompilation: no
+Packaged: 2025-08-01 13:45:02 UTC; marga
+Author: Jane Doe [aut, cre]
+Maintainer: Jane Doe <jane@example.com>
+Depends: R (>= 3.5.0)

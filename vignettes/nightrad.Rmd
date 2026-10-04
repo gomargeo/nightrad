@@ -1,0 +1,196 @@
+---
+title: "Nighttime Radiance Analysis over Greater Manila"
+author: "Margaux Neri"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Nighttime Radiance Analysis over Greater Manila}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+### **Introduction & Motivation**
+
+Understanding patterns of artificial nighttime lighting provides valuable insights into urbanization, economic activity, and spatial inequality, particularly in rapidly developing regions such as Greater Manila. This vignette demonstrates the capabilities of the `nightrad` package, which enables the analysis of VIIRS-DNB radiance data for the years 2022 and 2023. By integrating satellite imagery with administrative boundaries, the package supports the spatial exploration of city-level lighting patterns and changes across time.
+
+This analysis is guided by the following questions:
+
+1. What are the average annual nighttime radiance values across cities in Greater Manila for 2022 and 2023?
+2. To what extent did city-level radiance change between the two years?
+3. Are the spatial patterns consistent, or do they indicate emerging or dimming areas?
+
+### **Data Description & Preprocessing**
+
+This vignette uses the following datasets:
+
+ - Nighttime Radiance: Annual median composites of VIIRS-DNB (Visible Infrared Imaging Radiometer Suite – Day/Night Band) from the Earth Observation Group (EOG)
+   - Spatial resolution: 500m
+   - Format: GeoTIFF (.tif)
+   - Temporal coverage: 2022, 2023
+ - Administrative Boundaries: Greater Manila boundary from GADM
+ 
+All datasets were pre-clipped to the Greater Manila region for speed of analysis.
+
+### **Package Function and Analysis**
+
+```{r setup}
+library(nightrad)
+```
+
+```{r cities-map, fig.width=5, fig.height=7}
+cities_map(
+  shp_path = system.file("extdata/greater-manila.shp", package = "nightrad"),
+  group_col = "NAME_2",
+  label_col = "NAME_2",
+  map_title = "Cities within Greater Manila"
+)
+```
+
+#### a. Radiance Patterns
+
+```{r plot-jenks-radiance, fig.width=10, fig.height=5}
+# Load data from package
+rad_2022 <- terra::rast(system.file("extdata/VNL_2022_greater-manila.tif", package = "nightrad"))
+rad_2023 <- terra::rast(system.file("extdata/VNL_2023_greater-manila.tif", package = "nightrad"))
+shp <- terra::vect(system.file("extdata/greater-manila.shp", package = "nightrad"))
+
+# Plot
+plot_jenks_radiance(
+  raster1 = rad_2022,
+  raster2 = rad_2023,
+  boundary = shp,
+  n_classes = 6,
+  title1 = "2022 Radiance",
+  title2 = "2023 Radiance"
+)
+```
+
+The western-central corridor of Greater Manila consistently shows the highest nighttime radiance, gradually dimming toward the periphery. This spatial gradient reflects urban concentration in Metro Manila.
+
+```{r plot-mean-radiance, message=FALSE, warning=FALSE, fig.width=10, fig.height=5}
+suppressMessages({
+  suppressWarnings({
+    plot_mean_radiance(
+      raster1 = rad_2022,
+      raster2 = rad_2023,
+      shapefile = shp,
+      title1 = "City Radiance - 2022",
+      title2 = "City Radiance - 2023",
+      legend1 = "Mean Radiance 2022",
+      legend2 = "Mean Radiance 2023"
+    )
+  })
+})
+```
+
+*San Juan* stood out in the 2023 map, turning a noticeably darker orange while most other cities maintained similar intensity. This suggests a relative decrease in radiance unique to *San Juan*, contrasting with the generally stable pattern observed elsewhere.
+
+```{r prepare-data}
+rad_2022 <- terra::rast(system.file("extdata/VNL_2022_greater-manila.tif", package = "nightrad"))
+rad_2023 <- terra::rast(system.file("extdata/VNL_2023_greater-manila.tif", package = "nightrad"))
+shp <- terra::vect(system.file("extdata/greater-manila.shp", package = "nightrad"))
+
+city <- prepare_city_radiance(rad_2022, rad_2023, shp)
+```
+
+#### b. Rankings and Consistency
+
+```{r rank-radiance-map, fig.width=7, fig.height=6}
+rank_radiance_map(
+  city_sf = city,
+  col1 = "mean_2022",
+  col2 = "mean_2023",
+  label1 = "2022 Radiance",
+  label2 = "2023 Radiance",
+  city_col = "NAME_2"
+)
+```
+
+```{r rank-radiance-table}
+rank_radiance_table(
+  city_sf = city,
+  col1 = "mean_2022",
+  col2 = "mean_2023",
+  label1 = "2022 Radiance",
+  label2 = "2023 Radiance",
+  cityname1 = "City (2022)",
+  cityname2 = "City (2023)",
+  city_col = "NAME_2",
+  table_caption = "City-Level Radiance Rankings: 2022 vs 2023"
+)
+```
+
+The interactive map and table show that *Manila* and *Pasay* consistently topped the radiance rankings in both years. This finding aligns with the 2024 CMCI rankings of highly urbanized cities and supports Ensina et al. (2023), who noted that urban intensity is highest in the region’s central-western core. Their observation that urbanization weakens toward the periphery is mirrored in this radiance distribution.
+
+#### c. Year-on-Year Change
+
+```{r radiance-change-leaflet, fig.width=7, fig.height=6}
+radiance_change_leaflet(
+  city_sf = city,
+  col1 = "mean_2022",
+  col2 = "mean_2023",
+  city_col = "NAME_2",
+  label1 = "2022 Mean Radiance",
+  label2 = "2023 Mean Radiance",
+  legend_title = "Radiance Change: 2023 - 2022"
+)
+```
+
+```{r radiance-change-table}
+radiance_change_table(
+  city_sf = city,
+  col1 = "mean_2022",
+  col2 = "mean_2023",
+  city_col = "NAME_2",
+  label1 = "2022 Radiance",
+  label2 = "2023 Radiance",
+  change_label = "Change",
+  table_caption = "City-Level Radiance Change (2023 - 2022)"
+)
+```
+
+The map and table depict that most cities show an upward trend from 2022 to 2023, with stronger increases in the western section. *Manila*, *Imus*, and *Cabuyao* appear in deep red, indicating substantial growth, likely due to infrastructure upgrades and ongoing development. In *Manila*, this may relate to Horizon Manila (BizNewsAsia, n.d.); in *Imus* and *Cabuyao*, recent estate investments and service expansion may be contributing factors (ICCCI, 2025; Malabanan & Visco, 2021).
+
+### **Discussion/Interpretation**
+
+Nighttime radiance remained largely consistent across the two years, with the western corridor, particularly *Manila*, *Pasay*, *Makati*, and *Mandaluyong*, maintaining high brightness. These cities also ranked among the top urbanized areas in the CMCI (2024) and were previously identified by Ensina et al. (2023) as key urban centers. The pattern of intense brightness in the core, fading outward, mirrors the region’s urban hierarchy.
+
+The plots and tables confirm that *Manila* and *Pasay* consistently topped the list in both years. These results reflect sustained activity and development in central districts. Most outer cities showed stable or slightly increasing values, suggesting gradual urban expansion at the fringes.
+
+Some cities, like *Cabuyao* and *Imus*, registered the deepest red tones in the change map, indicating sharp increases in nighttime brightness. These may reflect infrastructure development, vertical housing, or population inflows. *Cabuyao*’s expansion of services and *Imus*’s estate investments are likely contributors. These findings echo those of Ensina et al. (2023), who noted intensified growth in the western and southern parts of the region.
+
+*San Juan* stood out in contrast, registering a sharp drop in radiance in 2023. While nearby cities maintained stable values, *San Juan*’s darker tone suggests a local anomaly, possibly related to outages, reduced activity, or changes in land use. No public reports confirm large-scale lighting reductions, but the change is clear in both the map and the ranking table.
+
+Taken together, these patterns respond to all three research questions. First, the city-level plots and rankings show that the highest radiance values are concentrated in the core. Second, most cities saw a positive change from 2022 to 2023. Third, the spatial patterns remained stable overall, with some emerging bright spots and one notable dimming area. Overall, the results highlight ongoing urban transformation in Greater Manila: stable cores, expanding edges, and isolated declines that may merit closer local investigation.
+
+### **Conclusion**
+
+This vignette demonstrates how `nightrad` enables city-level radiance analysis using VIIRS data. While *Manila* and *Pasay* remained consistently bright, cities like *Imus* and *Cabuyao* showed notable gains. *San Juan* was the only city to register a visible decline.
+
+Although this analysis focused on VIIRS 2022–2023 data, the `nightrad` package is not limited to that source. It can be applied to any pair of rasters from different time periods such as Landsat or NDVI layers, as long as they have comparable resolution and extent. This makes `nightrad` broadly useful for spatiotemporal raster analysis beyond urban nightlights.
+
+Radiance-based indicators can serve as proxies for tracking urban change, development, or decline over time. For future work, it would be valuable to incorporate additional years, explore monthly or seasonal trends, and link results to external datasets such as population, infrastructure, or land use. These enhancements would provide deeper insight and support more informed decision-making.
+
+#### Appendix: R CMD check Notes
+
+This package returns no errors or warnings. Two minor notes are explained below:
+
+1. Installed size > 5MB: Due to included spatial datasets needed for analysis.
+2. Unable to verify current time: A benign system-related note with no impact on functionality.
+
+These do not affect package performance or reproducibility.
+
+#### References
+
+1. BizNewsAsia. (n.d.). Building the Horizon: Manila Bay City. https://biznewsasia.com/building-the-horizon-manila-bay-city/
+2. Department of Trade and Industry. (2024). Cities and Municipalities Competitiveness Index: Highly Urbanized Cities Rankings. CMCI Philippines. https://cmci.dti.gov.ph/rankings-data.php?unit=Highly%20Urbanized%20Cities
+3. Ensina, M. A. B., Tabernilla, J. P., Carcellar, B. G. III, & Martinez, M. S. M. (2024). AToward Spatial and Social Equality: Investigating and Modeling the Link Between Opportunity and Urban Intensity in Metro Manila, Philippines. International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences, 48(4/W8), 211–218. https://doi.org/10.5194/isprs-archives-XLVIII-4-W8-2023-211-2024
+4. Imus City Chamber of Commerce and Industry. (2025). Why Invest in Imus. https://imuscitychamber.com/#:~:text=Being%20a%20highly%20urbanized%20city,Cities%20at%20the%20national%20level
+5. Malabanan, P. B., & Visco, E. S. (2021). Perceived resilience on urbanization of Barangay Sala and Barangay Casile, Cabuyao City, Laguna. International Conference on Multidisciplinary Industry and Academic Research (ICMIAR) 2(1). https://iiari.org/conference_abstract/perceived-resilience-on-urbanization-of-barangay-sala-and-barangay-casile-cabuyao-city-laguna/
